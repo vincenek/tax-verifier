@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Payment Link Verifier Helper",
+  "version": "0.1",
+  "description": "Opens the Payment Link Verifier with the current page URL.",
+  "action": {
+    "default_title": "Verify payment link",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["tabs"]
+}

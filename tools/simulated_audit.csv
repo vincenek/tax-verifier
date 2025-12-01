@@ -1,0 +1,6 @@
+"2025-12-01T16:44:58.858142","https://paypal.com/invoice/12345","","Safe","50","Trusted Vendor",""
+"2025-12-01T16:44:58.860149","http://suspicious-site.ru/payme","","Risky","90","Unknown Vendor",""
+"2025-12-01T16:44:58.860149","https://bit.ly/abc123","","Risky","60","Unknown Vendor",""
+"2025-12-01T16:44:58.861148","https://example.com/payee-urgent","","Risky","70","Likely Legitimate",""
+"2025-12-01T16:44:58.861148","0x742d35Cc6634C0532925a3b844Bc454e4438f44e","0x742d35Cc6634C0532925a3b844Bc454e4438f44e","Safe","50","Unknown Vendor",""
+"2025-12-01T16:44:58.864149","https://etherscan.io/address/0x742d35Cc6634C0532925a3b844Bc454e4438f44e","0x742d35Cc6634C0532925a3b844Bc454e4438f44e","Safe","50","Unknown Vendor",""
