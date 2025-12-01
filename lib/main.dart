@@ -22,13 +22,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF5F8FA),
         canvasColor: Colors.white,
-        cardTheme: const CardThemeData(
-          elevation: 4,
-          margin: EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-        ),
+        // cardTheme removed for broader Flutter compatibility across CI runners
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
           filled: true,
@@ -43,12 +37,12 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(Color(0xFF0A2540)),
-            foregroundColor: WidgetStatePropertyAll(Colors.white),
-            shape: WidgetStatePropertyAll(
+            backgroundColor: MaterialStatePropertyAll(Color(0xFF0A2540)),
+            foregroundColor: MaterialStatePropertyAll(Colors.white),
+            shape: MaterialStatePropertyAll(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            padding: WidgetStatePropertyAll(
+            padding: MaterialStatePropertyAll(
               EdgeInsets.symmetric(vertical: 16, horizontal: 32),
             ),
           ),
@@ -107,7 +101,7 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
   String? _vendorStatus;
   String? _faviconUrl;
   String? _screenshotUrl;
-  List<AuditEntry> _auditLog = [];
+  final List<AuditEntry> _auditLog = [];
   String? _cryptoAddress;
   String? _cryptoIdenticonUrl;
   String? _explorerUrl;
