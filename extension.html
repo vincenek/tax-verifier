@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Extension Hub — Payment Link Verifier</title>
+  <meta name="description" content="Extension hub and SDK for Payment Link Verifier">
+  <link rel="icon" href="https://i.ibb.co/qMK3Jmct/favicon-96x96.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="https://i.ibb.co/FLRWhWqH/web-app-manifest-192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="https://i.ibb.co/cXybSR8V/web-app-manifest-512x512.png">
+  <style>
+    body{font-family:system-ui,Arial,Helvetica,sans-serif;margin:24px;color:#0A2540}
+    main{max-width:760px;margin:0 auto}
+    pre{background:#f4f6f8;padding:12px;border-radius:6px;overflow:auto}
+    button{background:#0A2540;color:white;padding:10px 14px;border:0;border-radius:8px}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Extension & Integration Hub</h1>
+    <p>
+      Use this page to install the browser extension, create a bookmarklet, or integrate a tiny SDK into your app to open PLV with a URL for quick verification.
+    </p>
+    <h2>Quick Paste & Verify</h2>
+    <p>Click the button below to read the clipboard and open the verifier in a new tab with the current page URL.</p>
+    <p><button id="pasteOpen">Paste clipboard → Open Verifier</button></p>
+    <h2>Bookmarklet</h2>
+    <p>Drag this link to your bookmarks bar or copy it:</p>
+    <pre id="bookmarklet">javascript:(function(){window.open(location.origin + location.pathname + '?url='+encodeURIComponent(location.href),'_blank');})();</pre>
+    <h2>Tiny SDK (JavaScript)</h2>
+    <p>Embed this snippet to add a "Verify URL" button in your web app that opens PLV with the URL:</p>
+    <pre>&lt;script&gt;
+function openPLV(url){
+  var base = 'https://vincenek.github.io/tax-verifier/';
+  window.open(base + '?url=' + encodeURIComponent(url || location.href), '_blank');
+}
+&lt;/script&gt;
+&lt;button onclick="openPLV()"&gt;Verify this page&lt;/button&gt;
+</pre>
+    <h2>Extension (unpacked) instructions</h2>
+    <p>
+      Open Edge/Chrome, go to Extensions → Developer mode → Load unpacked, and select the `extension/` folder from this repository. The popup will open PLV with the active tab URL via `?url=`.
+    </p>
+    <p><a href="/tax-verifier/">Back to app</a></p>
+  </main>
+  <script>
+    document.getElementById('pasteOpen').addEventListener('click', async function(){
+      try{
+        const txt = await navigator.clipboard.readText();
+        if(!txt || txt.trim().length===0){
+          alert('Clipboard is empty or not accessible.');
+          return;
+        }
+        const base = window.location.origin + '/' + 'tax-verifier/';
+        window.open(base + '?url=' + encodeURIComponent(txt.trim()), '_blank');
+      }catch(e){
+        alert('Could not read clipboard. You can copy a URL and then click the bookmarklet or use the SDK.');
+      }
+    });
+  </script>
+</body>
+</html>
