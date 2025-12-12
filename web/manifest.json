@@ -10,23 +10,23 @@
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "https://ibb.co/nNx0w08P",
+            "src": "https://i.ibb.co/FLRWhWqH/web-app-manifest-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "https://ibb.co/G3ds4GMN",
+            "src": "https://i.ibb.co/cXybSR8V/web-app-manifest-512x512.png",
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "https://ibb.co/BVb5nTQX",
+            "src": "https://i.ibb.co/FLRWhWqH/web-app-manifest-192x192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "https://ibb.co/G3ds4GMN",
+            "src": "https://i.ibb.co/cXybSR8V/web-app-manifest-512x512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
