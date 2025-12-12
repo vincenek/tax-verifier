@@ -120,6 +120,9 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
   String? _explorerUrl;
   String? _lastVerifiedLink;
   List<AuditEntry> _batchEntries = [];
+  bool _isBatchRunning = false;
+  int _batchProgressIndex = 0;
+  int _batchProgressTotal = 0;
   String? _extensionModeNote;
   bool _extensionMode = false;
   List<String> _customRules = ["phish", "scam", "fake"];
@@ -296,39 +299,181 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
     final TextEditingController pasteController = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Paste CSV or links'),
-        content: SizedBox(
-          width: 400,
-          child: TextField(
-            controller: pasteController,
-            maxLines: 8,
-            decoration: const InputDecoration(
-                hintText: 'Paste one link per line or a CSV with links'),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              final text = pasteController.text.trim();
-              if (text.isEmpty) return;
-              // split by newlines or commas
-              final parts = text
-                  .split(RegExp(r'[,\n]'))
-                  .map((s) => s.trim())
-                  .where((s) => s.isNotEmpty)
-                  .toList();
-              _verifyBatch(parts);
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Run'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Batch Verification — CSV or links'),
+            content: SizedBox(
+              width: 520,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: pasteController,
+                    maxLines: 6,
+                    decoration: const InputDecoration(
+                        hintText: 'Paste one link per line or a CSV with links'),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          final csv = await _pickCsvFile();
+                          if (csv != null && csv.isNotEmpty) {
+                            pasteController.text = csv;
+                            setStateDialog(() {});
+                          }
+                        },
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('Upload CSV'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          try {
+                            html.window.navigator.clipboard?.readText().then((t) {
+                              if (t != null) pasteController.text = t;
+                            });
+                          } catch (_) {}
+                        },
+                        icon: const Icon(Icons.paste),
+                        label: const Text('Paste from clipboard'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (_isBatchRunning)
+                    Column(
+                      children: [
+                        LinearProgressIndicator(
+                          value: _batchProgressTotal > 0
+                              ? _batchProgressIndex / _batchProgressTotal
+                              : null,
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Processing ${_batchProgressIndex} of ${_batchProgressTotal}'),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: _isBatchRunning
+                    ? null
+                    : () {
+                        final text = pasteController.text.trim();
+                        if (text.isEmpty) return;
+                        final parts = _parseCsvLinks(text);
+                        Navigator.of(ctx).pop();
+                        _verifyBatchAsync(parts);
+                      },
+                child: const Text('Run'),
+              ),
+            ],
+          );
+        });
+      },
     );
+  }
+
+  Future<String?> _pickCsvFile() async {
+    try {
+      final input = html.FileUploadInputElement();
+      input.accept = '.csv,text/csv';
+      input.multiple = false;
+      final completer = Completer<String?>();
+      input.onChange.listen((_) {
+        final files = input.files;
+        if (files == null || files.isEmpty) {
+          completer.complete(null);
+          return;
+        }
+        final file = files[0];
+        final reader = html.FileReader();
+        reader.onLoad.listen((_) {
+          completer.complete(reader.result as String?);
+        });
+        reader.onError.listen((_) => completer.complete(null));
+        reader.readAsText(file);
+      });
+      input.click();
+      return completer.future.timeout(const Duration(seconds: 30), onTimeout: () => null);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<String> _parseCsvLinks(String text) {
+    final lines = text.split(RegExp(r'\r?\n'));
+    final List<String> results = [];
+    for (final line in lines) {
+      if (line.trim().isEmpty) continue;
+      // If comma-separated, try to find a field that looks like a URL
+      if (line.contains(',')) {
+        final fields = line.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        String? picked;
+        for (final f in fields) {
+          if (f.startsWith('http://') || f.startsWith('https://') || f.contains('www.')) {
+            picked = f;
+            break;
+          }
+          if (f.contains('.') && f.contains('/')) {
+            picked = f;
+            break;
+          }
+        }
+        if (picked != null) {
+          results.add(picked);
+          continue;
+        }
+        // fallback: take last field
+        results.add(fields.last);
+        continue;
+      }
+      // single column line
+      results.add(line.trim());
+    }
+    return results;
+  }
+
+  Future<void> _verifyBatchAsync(List<String> links) async {
+    if (links.isEmpty) return;
+    setState(() {
+      _isBatchRunning = true;
+      _batchProgressIndex = 0;
+      _batchProgressTotal = links.length;
+      _batchEntries = [];
+    });
+    final List<AuditEntry> entries = [];
+    for (int i = 0; i < links.length; i++) {
+      final link = links[i];
+      // lightweight pause so UI can update
+      await Future.delayed(const Duration(milliseconds: 120));
+      final score = _aiRiskScore(link);
+      final vendor = _lookupVendor(link);
+      final risky = _isRiskyLink(link);
+      final eth = extractEthAddress(link);
+      final entry = AuditEntry(
+        time: DateTime.now(),
+        link: link,
+        isRisky: risky,
+        score: score,
+        vendor: vendor,
+        cryptoAddress: eth,
+        note: '',
+      );
+      entries.add(entry);
+      setState(() {
+        _batchProgressIndex = i + 1;
+        _batchEntries = List.from(entries.reversed);
+      });
+    }
+    setState(() {
+      _isBatchRunning = false;
+    });
   }
 
   void _applyBatchToAudit({bool clearAfter = true}) {
