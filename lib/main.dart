@@ -598,13 +598,11 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
         actions: [
           IconButton(
             icon: const Icon(Icons.extension),
-            tooltip: 'Extension Mode',
+            tooltip: 'Extension Hub',
             onPressed: () {
-              setState(() {
-                _extensionMode = !_extensionMode;
-                // clear the short note when entering extension mode
-                if (_extensionMode) _extensionModeNote = null;
-              });
+              try {
+                html.window.open('extension.html', '_blank');
+              } catch (_) {}
             },
           ),
           IconButton(
@@ -819,10 +817,22 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
                                   onSubmitted: (_) => _verifyLink(),
                                 ),
                                 const SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: _verifyLink,
-                                  icon: const Icon(Icons.search),
-                                  label: const Text('Verify'),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: _verifyLink,
+                                        icon: const Icon(Icons.search),
+                                        label: const Text('Verify'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    OutlinedButton.icon(
+                                      onPressed: _pasteFromClipboard,
+                                      icon: const Icon(Icons.paste),
+                                      label: const Text('Paste & Verify'),
+                                    ),
+                                  ],
                                 ),
                                 if (_isLoading)
                                   Padding(
@@ -1387,6 +1397,7 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
                                           style: TextStyle(color: Colors.grey)),
                                     );
                                   }
+                      
 
                                   return ListView.separated(
                                     itemCount: filtered.length,
