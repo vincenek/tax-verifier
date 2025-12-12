@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:math';
-import 'package:flutter/services.dart';
 import 'web3_utils.dart';
 
 void main() {
@@ -39,12 +38,12 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStatePropertyAll(Color(0xFF0A2540)),
-            foregroundColor: MaterialStatePropertyAll(Colors.white),
-            shape: MaterialStatePropertyAll(
+            backgroundColor: WidgetStatePropertyAll(Color(0xFF0A2540)),
+            foregroundColor: WidgetStatePropertyAll(Colors.white),
+            shape: WidgetStatePropertyAll(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            padding: MaterialStatePropertyAll(
+            padding: WidgetStatePropertyAll(
               EdgeInsets.symmetric(vertical: 16, horizontal: 32),
             ),
           ),
@@ -76,7 +75,6 @@ class AuditEntry {
   String? note;
   String? cryptoAddress;
 
-
   AuditEntry({
     required this.time,
     required this.link,
@@ -87,14 +85,24 @@ class AuditEntry {
     this.cryptoAddress,
   });
 
-  String get display => '${time.toLocal()} - $link - ${isRisky ? 'Risky' : 'Safe'}';
+  String get display =>
+      '${time.toLocal()} - $link - ${isRisky ? 'Risky' : 'Safe'}';
 
   List<String> toCsvRow() {
-    return [time.toIso8601String(), link, cryptoAddress ?? '', isRisky ? 'Risky' : 'Safe', score.toString(), vendor, note ?? ''];
+    return [
+      time.toIso8601String(),
+      link,
+      cryptoAddress ?? '',
+      isRisky ? 'Risky' : 'Safe',
+      score.toString(),
+      vendor,
+      note ?? ''
+    ];
   }
 }
 
-class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTickerProviderStateMixin {
+class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
+  with TickerProviderStateMixin {
   final TextEditingController _linkController = TextEditingController();
   final TextEditingController _ruleController = TextEditingController();
   bool _isLoading = false;
@@ -132,7 +140,9 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
   }
 
   void _verifyLink() async {
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
     await Future.delayed(const Duration(milliseconds: 600)); // Simulate loading
     final link = _linkController.text.trim();
     if (link.isEmpty) {
@@ -196,10 +206,15 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
     }
     _loadCustomRules();
     // background animation controller (subtle color shifts)
-    _bgController = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat();
+    _bgController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 12))
+          ..repeat();
     // pulsing FAB
-    _fabController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
-    _fabScale = Tween<double>(begin: 0.98, end: 1.04).animate(CurvedAnimation(parent: _fabController, curve: Curves.easeInOut));
+    _fabController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat(reverse: true);
+    _fabScale = Tween<double>(begin: 0.98, end: 1.04).animate(
+        CurvedAnimation(parent: _fabController, curve: Curves.easeInOut));
   }
 
   @override
@@ -227,14 +242,17 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
   }
 
   void _showBookmarkletDialog() {
-    final code = "javascript:(function(){window.open('${Uri.base.origin + Uri.base.path}?url='+encodeURIComponent(location.href),'_blank');})()";
+    final code =
+        "javascript:(function(){window.open('${Uri.base.origin + Uri.base.path}?url='+encodeURIComponent(location.href),'_blank');})()";
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Bookmarklet (click & drag to bookmarks)'),
         content: SelectableText(code),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Close')),
           ElevatedButton(
             onPressed: () {
               try {
@@ -285,17 +303,24 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
           child: TextField(
             controller: pasteController,
             maxLines: 8,
-            decoration: const InputDecoration(hintText: 'Paste one link per line or a CSV with links'),
+            decoration: const InputDecoration(
+                hintText: 'Paste one link per line or a CSV with links'),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               final text = pasteController.text.trim();
               if (text.isEmpty) return;
               // split by newlines or commas
-              final parts = text.split(RegExp(r'[,\n]')).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+              final parts = text
+                  .split(RegExp(r'[,\n]'))
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty)
+                  .toList();
               _verifyBatch(parts);
               Navigator.of(ctx).pop();
             },
@@ -319,20 +344,21 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
   int _aiRiskScore(String link) {
     // Simulate a more nuanced risk score based on matched patterns
     final patterns = [
-      'http://',
-      'payee-',
-      'secure-',
-      'verify-',
-      'login',
-      'update',
-      'phish',
-      'scam',
-      'fake',
-      'suspicious',
-      'invoice-now',
-      'urgent',
-      'wire-transfer',
-    ] + _customRules;
+          'http://',
+          'payee-',
+          'secure-',
+          'verify-',
+          'login',
+          'update',
+          'phish',
+          'scam',
+          'fake',
+          'suspicious',
+          'invoice-now',
+          'urgent',
+          'wire-transfer',
+        ] +
+        _customRules;
     int matches = 0;
     for (final p in patterns) {
       if (link.toLowerCase().contains(p)) {
@@ -343,14 +369,21 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
     int score = (50 + matches * 10).clamp(0, 100);
     // slightly increase for non-https or shorteners
     if (link.startsWith('http://')) score = (score + 20).clamp(0, 100);
-    if (link.contains('bit.ly') || link.contains('tinyurl.com')) score = (score + 10).clamp(0, 100);
+    if (link.contains('bit.ly') || link.contains('tinyurl.com'))
+      score = (score + 10).clamp(0, 100);
     return score;
   }
 
   // Vendor reputation lookup stub
   String _lookupVendor(String link) {
     final domain = Uri.tryParse(link)?.host ?? '';
-    final trusted = ['paypal.com', 'stripe.com', 'squareup.com', 'wise.com', 'transferwise.com'];
+    final trusted = [
+      'paypal.com',
+      'stripe.com',
+      'squareup.com',
+      'wise.com',
+      'transferwise.com'
+    ];
     final flagged = ['scam-site.com', 'badvendor.example'];
     for (final t in trusted) {
       if (domain.contains(t)) {
@@ -363,7 +396,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
       }
     }
     // heuristic: long-established-looking domains
-    if (domain.endsWith('.com') && domain.split('.').first.length > 3) return 'Likely Legitimate';
+    if (domain.endsWith('.com') && domain.split('.').first.length > 3)
+      return 'Likely Legitimate';
     return 'Unknown Vendor';
   }
 
@@ -391,14 +425,17 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
 
   // Audit notes
   void _editAuditNote(AuditEntry entry) {
-    final TextEditingController noteController = TextEditingController(text: entry.note ?? '');
+    final TextEditingController noteController =
+        TextEditingController(text: entry.note ?? '');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Add note'),
         content: TextField(controller: noteController, maxLines: 4),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -419,7 +456,9 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
     for (final entry in _auditLog) {
       rows.add(entry.toCsvRow());
     }
-    final csv = rows.map((r) => r.map((c) => '"${c.replaceAll('"', '""')}"').join(',')).join('\n');
+    final csv = rows
+        .map((r) => r.map((c) => '"${c.replaceAll('"', '""')}"').join(','))
+        .join('\n');
     final bytes = utf8.encode(csv);
     final blob = html.Blob([bytes]);
     final url = html.Url.createObjectUrlFromBlob(blob);
@@ -474,7 +513,11 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
   }
 
   void _importCustomRulesFromText(String txt) {
-    final parts = txt.split(RegExp(r'[\n,]')).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final parts = txt
+        .split(RegExp(r'[\n,]'))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return;
     setState(() {
       for (final p in parts) {
@@ -489,8 +532,7 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
   // (Previously had an export helper; CSV export implemented in _downloadAuditCsv)
 
   bool _isRiskyLink(String link) {
-    final riskyPatterns =
-        [
+    final riskyPatterns = [
           'http://',
           'payee-',
           'secure-',
@@ -590,12 +632,19 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
             animation: _bgController,
             builder: (context, child) {
               final t = _bgController.value;
-              final c1 = Color.lerp(const Color(0xFF071826), const Color(0xFF0A2540), 0.5 + 0.5 * sin(2 * pi * t))!;
-              final c2 = Color.lerp(const Color(0xFF0A2540), const Color(0xFF2AB7CA), 0.5 + 0.5 * cos(2 * pi * t))!;
+              final c1 = Color.lerp(const Color(0xFF071826),
+                  const Color(0xFF0A2540), 0.5 + 0.5 * sin(2 * pi * t))!;
+              final c2 = Color.lerp(const Color(0xFF0A2540),
+                  const Color(0xFF2AB7CA), 0.5 + 0.5 * cos(2 * pi * t))!;
               return Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [c1, c2, const Color(0xFF2AB7CA), const Color(0xFFF5F8FA)],
+                    colors: [
+                      c1,
+                      c2,
+                      const Color(0xFF2AB7CA),
+                      const Color(0xFFF5F8FA)
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -604,7 +653,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
             },
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 80, left: 24, right: 24, bottom: 24),
+            padding:
+                const EdgeInsets.only(top: 80, left: 24, right: 24, bottom: 24),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
@@ -612,13 +662,18 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                        // Intro / hero card with brief pitch
-                        MouseRegion(
-                          onEnter: (_) => setState(() => _hoveringHero = true),
-                          onExit: (_) => setState(() => _hoveringHero = false),
-                          child: AnimatedContainer(
+                      // Intro / hero card with brief pitch
+                      MouseRegion(
+                        onEnter: (_) => setState(() => _hoveringHero = true),
+                        onExit: (_) => setState(() => _hoveringHero = false),
+                        child: AnimatedSlide(
+                          offset: Offset(0, _hoveringHero ? -0.03 : 0.0),
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                          child: AnimatedScale(
+                            scale: _hoveringHero ? 1.01 : 1.0,
                             duration: const Duration(milliseconds: 250),
-                            transform: Matrix4.identity()..translate(0.0, _hoveringHero ? -6.0 : 0.0)..scale(_hoveringHero ? 1.01 : 1.0),
+                            curve: Curves.easeInOut,
                             child: Card(
                               elevation: _hoveringHero ? 14 : 10,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -644,7 +699,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                      ),
+                      const SizedBox(height: 12),
                       if (_extensionMode || _extensionModeNote != null)
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 400),
@@ -655,22 +711,29 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   child: Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
                                         Row(
                                           children: [
-                                            const Icon(Icons.extension, color: Colors.teal),
+                                            const Icon(Icons.extension,
+                                                color: Colors.teal),
                                             const SizedBox(width: 8),
-                                            const Text('Extension Mode', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                                            const Text('Extension Mode',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.teal)),
                                             const Spacer(),
                                             TextButton(
-                                              onPressed: () => setState(() => _extensionMode = false),
+                                              onPressed: () => setState(
+                                                  () => _extensionMode = false),
                                               child: const Text('Close'),
                                             ),
                                           ],
                                         ),
                                         const SizedBox(height: 8),
-                                        const Text('Quick actions to verify the current page or clipboard.'),
+                                        const Text(
+                                            'Quick actions to verify the current page or clipboard.'),
                                         const SizedBox(height: 10),
                                         Wrap(
                                           spacing: 8,
@@ -679,28 +742,36 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                             ElevatedButton.icon(
                                               onPressed: _pasteFromClipboard,
                                               icon: const Icon(Icons.paste),
-                                              label: const Text('Paste & Verify'),
+                                              label:
+                                                  const Text('Paste & Verify'),
                                             ),
                                             OutlinedButton.icon(
                                               onPressed: _showBookmarkletDialog,
                                               icon: const Icon(Icons.link),
-                                              label: const Text('Get Bookmarklet'),
+                                              label:
+                                                  const Text('Get Bookmarklet'),
                                             ),
                                             OutlinedButton.icon(
                                               onPressed: () {
                                                 // copy instructions to clipboard
-                                                final txt = 'Load the extension from the project `extension/` folder in Edge (enable Developer Mode -> Load unpacked).';
+                                                final txt =
+                                                    'Load the extension from the project `extension/` folder in Edge (enable Developer Mode -> Load unpacked).';
                                                 try {
-                                                  html.window.navigator.clipboard?.writeText(txt);
+                                                  html.window.navigator
+                                                      .clipboard
+                                                      ?.writeText(txt);
                                                 } catch (_) {}
                                               },
-                                              icon: const Icon(Icons.info_outline),
-                                              label: const Text('Copy Install Steps'),
+                                              icon: const Icon(
+                                                  Icons.info_outline),
+                                              label: const Text(
+                                                  'Copy Install Steps'),
                                             ),
                                           ],
                                         ),
                                         const SizedBox(height: 8),
-                                        const Text('Notes: bookmarklet opens the verifier with the current page URL using `?url=`. Use the extension popup for a one-click workflow.'),
+                                        const Text(
+                                            'Notes: bookmarklet opens the verifier with the current page URL using `?url=`. Use the extension popup for a one-click workflow.'),
                                       ],
                                     ),
                                   ),
@@ -742,7 +813,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   controller: _linkController,
                                   decoration: const InputDecoration(
                                     labelText: 'Payment/Invoice/Vendor Link',
-                                    prefixIcon: Icon(Icons.link, color: Colors.teal),
+                                    prefixIcon:
+                                        Icon(Icons.link, color: Colors.teal),
                                   ),
                                   onSubmitted: (_) => _verifyLink(),
                                 ),
@@ -756,7 +828,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   Padding(
                                     padding: const EdgeInsets.only(top: 12),
                                     child: Center(
-                                      child: CircularProgressIndicator(color: Colors.teal),
+                                      child: CircularProgressIndicator(
+                                          color: Colors.teal),
                                     ),
                                   ),
                               ],
@@ -775,18 +848,23 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                     _cryptoIdenticonUrl!,
                                     width: 48,
                                     height: 48,
-                                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                    errorBuilder: (_, __, ___) =>
+                                        const SizedBox.shrink(),
                                   ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Text('Web3 Address Detected', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      const Text('Web3 Address Detected',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
                                       const SizedBox(height: 6),
                                       Text(
                                         _cryptoAddress ?? '',
-                                        style: const TextStyle(fontFamily: 'monospace'),
+                                        style: const TextStyle(
+                                            fontFamily: 'monospace'),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 8),
@@ -794,9 +872,12 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                         children: [
                                           TextButton(
                                             onPressed: () {
-                                              if (_explorerUrl != null) html.window.open(_explorerUrl!, '_blank');
+                                              if (_explorerUrl != null)
+                                                html.window.open(
+                                                    _explorerUrl!, '_blank');
                                             },
-                                            child: const Text('Open on Etherscan'),
+                                            child:
+                                                const Text('Open on Etherscan'),
                                           ),
                                         ],
                                       ),
@@ -814,15 +895,20 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // CTA / Marketing section
-                              const Text('Share & Install', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              const Text('Share & Install',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
-                              Text('Show this tool to a colleague or install the browser extension for quick access.'),
+                              Text(
+                                  'Show this tool to a colleague or install the browser extension for quick access.'),
                               const SizedBox(height: 10),
                               Row(
                                 children: [
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                      final link = Uri.base.origin + Uri.base.path;
+                                      final link =
+                                          Uri.base.origin + Uri.base.path;
                                       _shareOrCopy(link);
                                     },
                                     icon: const Icon(Icons.share),
@@ -832,9 +918,12 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   OutlinedButton.icon(
                                     onPressed: () {
                                       // open extension folder README on GitHub
-                                      html.window.open('https://github.com/vincenek/tax-verifier/tree/main/extension', '_blank');
+                                      html.window.open(
+                                          'https://github.com/vincenek/tax-verifier/tree/main/extension',
+                                          '_blank');
                                     },
-                                    icon: const Icon(Icons.download_for_offline),
+                                    icon:
+                                        const Icon(Icons.download_for_offline),
                                     label: const Text('Extension'),
                                   ),
                                 ],
@@ -846,7 +935,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                     child: TextField(
                                       controller: _ruleController,
                                       decoration: const InputDecoration(
-                                        labelText: 'Add Custom Rule (keyword/domain)',
+                                        labelText:
+                                            'Add Custom Rule (keyword/domain)',
                                         prefixIcon: Icon(
                                           Icons.rule,
                                           color: Colors.teal,
@@ -873,7 +963,8 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   ),
                                   const SizedBox(width: 8),
                                   Chip(
-                                    label: Text('Rules: ${_customRules.length}'),
+                                    label:
+                                        Text('Rules: ${_customRules.length}'),
                                   ),
                                 ],
                               ),
@@ -891,15 +982,26 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                       showDialog(
                                         context: context,
                                         builder: (ctx) {
-                                          final TextEditingController importCtrl = TextEditingController();
+                                          final TextEditingController
+                                              importCtrl =
+                                              TextEditingController();
                                           return AlertDialog(
                                             title: const Text('Import Rules'),
-                                            content: TextField(controller: importCtrl, maxLines: 6, decoration: const InputDecoration(hintText: 'Paste rules, one per line')),
+                                            content: TextField(
+                                                controller: importCtrl,
+                                                maxLines: 6,
+                                                decoration: const InputDecoration(
+                                                    hintText:
+                                                        'Paste rules, one per line')),
                                             actions: [
-                                              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+                                              TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(ctx).pop(),
+                                                  child: const Text('Cancel')),
                                               ElevatedButton(
                                                 onPressed: () {
-                                                  _importCustomRulesFromText(importCtrl.text);
+                                                  _importCustomRulesFromText(
+                                                      importCtrl.text);
                                                   Navigator.of(ctx).pop();
                                                 },
                                                 child: const Text('Import'),
@@ -954,34 +1056,44 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                           _faviconUrl!,
                                           width: 24,
                                           height: 24,
-                                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                          errorBuilder: (_, __, ___) =>
+                                              const SizedBox.shrink(),
                                         ),
                                         const SizedBox(width: 8),
-                                        Flexible(child: Text('Favicon detected', overflow: TextOverflow.ellipsis)),
+                                        Flexible(
+                                            child: Text('Favicon detected',
+                                                overflow:
+                                                    TextOverflow.ellipsis)),
                                       ],
                                     ),
                                   if (_screenshotUrl != null)
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
                                       child: ConstrainedBox(
-                                        constraints: const BoxConstraints(maxHeight: 140),
+                                        constraints: const BoxConstraints(
+                                            maxHeight: 140),
                                         child: Image.network(
                                           _screenshotUrl!,
                                           height: 100,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                          errorBuilder: (_, __, ___) =>
+                                              const SizedBox.shrink(),
                                         ),
                                       ),
                                     ),
                                   if (_riskScore != null)
                                     Row(
                                       children: [
-                                        const Icon(Icons.shield, color: Colors.teal),
+                                        const Icon(Icons.shield,
+                                            color: Colors.teal),
                                         const SizedBox(width: 8),
                                         Flexible(
                                           child: Text(
                                             _riskScore!,
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -990,12 +1102,14 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   if (_vendorStatus != null)
                                     Row(
                                       children: [
-                                        const Icon(Icons.business, color: Colors.teal),
+                                        const Icon(Icons.business,
+                                            color: Colors.teal),
                                         const SizedBox(width: 8),
                                         Flexible(
                                           child: Text(
                                             _vendorStatus!,
-                                            style: const TextStyle(fontSize: 16),
+                                            style:
+                                                const TextStyle(fontSize: 16),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -1005,25 +1119,34 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   if (_result != null)
                                     Row(
                                       children: [
-                                            AnimatedSwitcher(
-                                              duration: const Duration(milliseconds: 350),
-                                              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-                                              child: Icon(
-                                                _result!.startsWith('Risky') ? Icons.warning : Icons.check_circle,
-                                                key: ValueKey(_result!.startsWith('Risky')),
-                                                color: _result!.startsWith('Risky') ? Colors.red : Colors.green,
-                                                size: 28,
-                                              ),
-                                            ),
+                                        AnimatedSwitcher(
+                                          duration:
+                                              const Duration(milliseconds: 350),
+                                          transitionBuilder: (child, anim) =>
+                                              ScaleTransition(
+                                                  scale: anim, child: child),
+                                          child: Icon(
+                                            _result!.startsWith('Risky')
+                                                ? Icons.warning
+                                                : Icons.check_circle,
+                                            key: ValueKey(
+                                                _result!.startsWith('Risky')),
+                                            color: _result!.startsWith('Risky')
+                                                ? Colors.red
+                                                : Colors.green,
+                                            size: 28,
+                                          ),
+                                        ),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
                                             _result!,
                                             style: TextStyle(
                                               fontSize: 18,
-                                              color: _result!.startsWith('Risky')
-                                                  ? Colors.red
-                                                  : Colors.green,
+                                              color:
+                                                  _result!.startsWith('Risky')
+                                                      ? Colors.red
+                                                      : Colors.green,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -1061,14 +1184,19 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                         const SizedBox(width: 8),
                                         TextButton.icon(
                                           onPressed: () {
-                                            if (_lastVerifiedLink == null) return;
+                                            if (_lastVerifiedLink == null)
+                                              return;
                                             setState(() {
-                                              _auditLog.removeWhere((e) => e.link == _lastVerifiedLink);
+                                              _auditLog.removeWhere((e) =>
+                                                  e.link == _lastVerifiedLink);
                                               _lastVerifiedLink = null;
                                             });
                                           },
-                                          icon: const Icon(Icons.delete_forever, color: Colors.red),
-                                          label: const Text('Remove from Audit', style: TextStyle(color: Colors.red)),
+                                          icon: const Icon(Icons.delete_forever,
+                                              color: Colors.red),
+                                          label: const Text('Remove from Audit',
+                                              style:
+                                                  TextStyle(color: Colors.red)),
                                         ),
                                       ],
                                     ),
@@ -1107,56 +1235,77 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                               ),
                               if (_batchEntries.isNotEmpty)
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     Row(
                                       children: [
                                         ElevatedButton(
                                           onPressed: () => _applyBatchToAudit(),
-                                          child: const Text('Add all to Audit Log'),
+                                          child: const Text(
+                                              'Add all to Audit Log'),
                                         ),
                                         const SizedBox(width: 8),
                                         OutlinedButton(
-                                          onPressed: () => setState(() => _batchEntries.clear()),
+                                          onPressed: () => setState(
+                                              () => _batchEntries.clear()),
                                           child: const Text('Clear Batch'),
                                         ),
                                         const Spacer(),
-                                        Text('${_batchEntries.length} results', style: const TextStyle(color: Colors.grey)),
+                                        Text('${_batchEntries.length} results',
+                                            style: const TextStyle(
+                                                color: Colors.grey)),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     ConstrainedBox(
                                       constraints: BoxConstraints(
-                                          maxHeight: MediaQuery.of(context).size.height * 0.28, maxWidth: double.infinity),
+                                          maxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.28,
+                                          maxWidth: double.infinity),
                                       child: ListView.separated(
                                         shrinkWrap: true,
                                         itemCount: _batchEntries.length,
-                                        separatorBuilder: (_, __) => const Divider(height: 8),
+                                        separatorBuilder: (_, __) =>
+                                            const Divider(height: 8),
                                         itemBuilder: (context, i) {
                                           final e = _batchEntries[i];
-                                              return TweenAnimationBuilder<double>(
-                                                tween: Tween(begin: 18.0, end: 0.0),
-                                                duration: Duration(milliseconds: 300 + (i * 30)),
-                                                builder: (context, val, child) => Transform.translate(
-                                                  offset: Offset(0, val),
-                                                  child: Opacity(opacity: 1.0 - (val / 30.0).clamp(0.0, 1.0), child: child),
-                                                ),
-                                                child: ListTile(
-                                                  title: Text(e.display, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                                  subtitle: Text('Score: ${e.score} • ${e.vendor}'),
-                                                  trailing: IconButton(
-                                                    icon: const Icon(Icons.add_circle_outline),
-                                                    tooltip: 'Add to Audit Log',
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        _auditLog.insert(0, e);
-                                                        _batchEntries.removeAt(i);
-                                                      });
-                                                    },
-                                                  ),
-                                                  onTap: () => _editAuditNote(e),
-                                                ),
-                                              );
+                                          return TweenAnimationBuilder<double>(
+                                            tween: Tween(begin: 18.0, end: 0.0),
+                                            duration: Duration(
+                                                milliseconds: 300 + (i * 30)),
+                                            builder: (context, val, child) =>
+                                                Transform.translate(
+                                              offset: Offset(0, val),
+                                              child: Opacity(
+                                                  opacity: 1.0 -
+                                                      (val / 30.0)
+                                                          .clamp(0.0, 1.0),
+                                                  child: child),
+                                            ),
+                                            child: ListTile(
+                                              title: Text(e.display,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                              subtitle: Text(
+                                                  'Score: ${e.score} • ${e.vendor}'),
+                                              trailing: IconButton(
+                                                icon: const Icon(
+                                                    Icons.add_circle_outline),
+                                                tooltip: 'Add to Audit Log',
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _auditLog.insert(0, e);
+                                                    _batchEntries.removeAt(i);
+                                                  });
+                                                },
+                                              ),
+                                              onTap: () => _editAuditNote(e),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),
@@ -1192,68 +1341,95 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   ChoiceChip(
                                     label: const Text('All'),
                                     selected: _auditFilter == 0,
-                                    onSelected: (v) => setState(() => _auditFilter = v ? 0 : _auditFilter),
+                                    onSelected: (v) => setState(() =>
+                                        _auditFilter = v ? 0 : _auditFilter),
                                   ),
                                   ChoiceChip(
                                     label: const Text('Risky'),
                                     selected: _auditFilter == 1,
-                                    onSelected: (v) => setState(() => _auditFilter = v ? 1 : _auditFilter),
+                                    onSelected: (v) => setState(() =>
+                                        _auditFilter = v ? 1 : _auditFilter),
                                   ),
                                   ChoiceChip(
                                     label: const Text('Safe'),
                                     selected: _auditFilter == 2,
-                                    onSelected: (v) => setState(() => _auditFilter = v ? 2 : _auditFilter),
+                                    onSelected: (v) => setState(() =>
+                                        _auditFilter = v ? 2 : _auditFilter),
                                   ),
                                   ChoiceChip(
                                     label: const Text('Notes'),
                                     selected: _auditFilter == 3,
-                                    onSelected: (v) => setState(() => _auditFilter = v ? 3 : _auditFilter),
+                                    onSelected: (v) => setState(() =>
+                                        _auditFilter = v ? 3 : _auditFilter),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               SizedBox(
-                                height: MediaQuery.of(context).size.height * 0.32 < 300
+                                height: MediaQuery.of(context).size.height *
+                                            0.32 <
+                                        300
                                     ? MediaQuery.of(context).size.height * 0.32
                                     : 300,
                                 child: Builder(builder: (context) {
                                   final filtered = _auditLog.where((e) {
                                     if (_auditFilter == 1) return e.isRisky;
                                     if (_auditFilter == 2) return !e.isRisky;
-                                    if (_auditFilter == 3) return e.note != null && e.note!.isNotEmpty;
+                                    if (_auditFilter == 3)
+                                      return e.note != null &&
+                                          e.note!.isNotEmpty;
                                     return true;
                                   }).toList();
 
                                   if (filtered.isEmpty) {
                                     return const Center(
-                                      child: Text('No audit entries', style: TextStyle(color: Colors.grey)),
+                                      child: Text('No audit entries',
+                                          style: TextStyle(color: Colors.grey)),
                                     );
                                   }
 
                                   return ListView.separated(
                                     itemCount: filtered.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 6),
                                     itemBuilder: (context, index) {
                                       final entry = filtered[index];
                                       return TweenAnimationBuilder<double>(
                                         tween: Tween(begin: 18.0, end: 0.0),
-                                        duration: Duration(milliseconds: 300 + (index * 25)),
-                                        builder: (context, val, child) => Transform.translate(
+                                        duration: Duration(
+                                            milliseconds: 300 + (index * 25)),
+                                        builder: (context, val, child) =>
+                                            Transform.translate(
                                           offset: Offset(0, val),
-                                          child: Opacity(opacity: 1.0 - (val / 30.0).clamp(0.0, 1.0), child: child),
+                                          child: Opacity(
+                                              opacity: 1.0 -
+                                                  (val / 30.0).clamp(0.0, 1.0),
+                                              child: child),
                                         ),
                                         child: Card(
-                                          margin: const EdgeInsets.symmetric(vertical: 4),
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 4),
                                           child: ListTile(
                                             leading: Icon(
-                                              entry.isRisky ? Icons.warning : Icons.check_circle,
-                                              color: entry.isRisky ? Colors.red : Colors.green,
+                                              entry.isRisky
+                                                  ? Icons.warning
+                                                  : Icons.check_circle,
+                                              color: entry.isRisky
+                                                  ? Colors.red
+                                                  : Colors.green,
                                             ),
-                                            title: Text(entry.display, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                            subtitle: entry.note != null && entry.note!.isNotEmpty ? Text(entry.note!) : null,
+                                            title: Text(entry.display,
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                            subtitle: entry.note != null &&
+                                                    entry.note!.isNotEmpty
+                                                ? Text(entry.note!)
+                                                : null,
                                             onTap: () => _editAuditNote(entry),
                                             trailing: IconButton(
-                                              icon: const Icon(Icons.delete, color: Colors.grey),
+                                              icon: const Icon(Icons.delete,
+                                                  color: Colors.grey),
                                               onPressed: () {
                                                 setState(() {
                                                   _auditLog.remove(entry);
