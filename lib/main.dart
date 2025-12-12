@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:math';
+import 'package:flutter/services.dart';
 import 'web3_utils.dart';
 
 void main() {
@@ -118,6 +119,17 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
 
   // Persistence keys
   final String _kCustomRules = 'plv_custom_rules';
+
+  // Hover state helpers
+  bool _hoveringHero = false;
+
+  Future<void> _shareOrCopy(String text) async {
+    try {
+      // try navigator.share when available
+      // dart:html share isn't stable across browsers; fallback to clipboard
+      await html.window.navigator.clipboard?.writeText(text);
+    } catch (_) {}
+  }
 
   void _verifyLink() async {
     setState(() { _isLoading = true; });
@@ -601,26 +613,34 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                         // Intro / hero card with brief pitch
-                        Card(
-                          elevation: 10,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text('Payment Link Verifier', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Quickly check payment, invoice, or vendor links for obvious fraud indicators. This client-side tool helps reduce social-engineering risks by surfacing suspicious patterns, Web3 addresses, and vendor signals without sending your URLs to any server.',
+                        MouseRegion(
+                          onEnter: (_) => setState(() => _hoveringHero = true),
+                          onExit: (_) => setState(() => _hoveringHero = false),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            transform: Matrix4.identity()..translate(0.0, _hoveringHero ? -6.0 : 0.0)..scale(_hoveringHero ? 1.01 : 1.0),
+                            child: Card(
+                              elevation: _hoveringHero ? 14 : 10,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text('Payment Link Verifier', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Quickly check payment, invoice, or vendor links for obvious fraud indicators. This client-side tool helps reduce social-engineering risks by surfacing suspicious patterns, Web3 addresses, and vendor signals without sending your URLs to any server.',
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text('Why this matters:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 4),
+                                    Text('- Scams use crafted links to trick payers into sending funds.'),
+                                    Text('- Fast, local checks complement manual diligence.'),
+                                    Text('- Integrates Web3 address checks for crypto payments.'),
+                                  ],
                                 ),
-                                SizedBox(height: 8),
-                                Text('Why this matters:', style: TextStyle(fontWeight: FontWeight.bold)),
-                                SizedBox(height: 4),
-                                Text('- Scams use crafted links to trick payers into sending funds.'),
-                                Text('- Fast, local checks complement manual diligence.'),
-                                Text('- Integrates Web3 address checks for crypto payments.'),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -793,6 +813,33 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // CTA / Marketing section
+                              const Text('Share & Install', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text('Show this tool to a colleague or install the browser extension for quick access.'),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      final link = Uri.base.origin + Uri.base.path;
+                                      _shareOrCopy(link);
+                                    },
+                                    icon: const Icon(Icons.share),
+                                    label: const Text('Share Link'),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      // open extension folder README on GitHub
+                                      html.window.open('https://github.com/vincenek/tax-verifier/tree/main/extension', '_blank');
+                                    },
+                                    icon: const Icon(Icons.download_for_offline),
+                                    label: const Text('Extension'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
                               Row(
                                 children: [
                                   Expanded(
@@ -958,14 +1005,16 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTi
                                   if (_result != null)
                                     Row(
                                       children: [
-                                        Icon(
-                                          _result!.startsWith('Risky')
-                                              ? Icons.warning
-                                              : Icons.check_circle,
-                                          color: _result!.startsWith('Risky')
-                                              ? Colors.red
-                                              : Colors.green,
-                                        ),
+                                            AnimatedSwitcher(
+                                              duration: const Duration(milliseconds: 350),
+                                              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                                              child: Icon(
+                                                _result!.startsWith('Risky') ? Icons.warning : Icons.check_circle,
+                                                key: ValueKey(_result!.startsWith('Risky')),
+                                                color: _result!.startsWith('Risky') ? Colors.red : Colors.green,
+                                                size: 28,
+                                              ),
+                                            ),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
