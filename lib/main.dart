@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'dart:math';
 import 'web3_utils.dart';
 
 void main() {
@@ -92,7 +93,7 @@ class AuditEntry {
   }
 }
 
-class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
+class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> with SingleTickerProviderStateMixin {
   final TextEditingController _linkController = TextEditingController();
   final TextEditingController _ruleController = TextEditingController();
   bool _isLoading = false;
@@ -102,6 +103,9 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
   String? _faviconUrl;
   String? _screenshotUrl;
   final List<AuditEntry> _auditLog = [];
+  late final AnimationController _bgController;
+  late final AnimationController _fabController;
+  late final Animation<double> _fabScale;
   String? _cryptoAddress;
   String? _cryptoIdenticonUrl;
   String? _explorerUrl;
@@ -179,12 +183,19 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
       Future.delayed(const Duration(milliseconds: 250), () => _verifyLink());
     }
     _loadCustomRules();
+    // background animation controller (subtle color shifts)
+    _bgController = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat();
+    // pulsing FAB
+    _fabController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _fabScale = Tween<double>(begin: 0.98, end: 1.04).animate(CurvedAnimation(parent: _fabController, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
     _linkController.dispose();
     _ruleController.dispose();
+    _bgController.dispose();
+    _fabController.dispose();
     super.dispose();
   }
 
@@ -551,22 +562,34 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _verifyLink,
-        icon: const Icon(Icons.search),
-        label: const Text('Quick Verify'),
-        backgroundColor: Colors.teal,
+      floatingActionButton: ScaleTransition(
+        scale: _fabScale,
+        child: FloatingActionButton.extended(
+          onPressed: _verifyLink,
+          icon: const Icon(Icons.search),
+          label: const Text('Quick Verify'),
+          backgroundColor: Colors.teal,
+        ),
       ),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0A2540), Color(0xFF2AB7CA), Color(0xFFF5F8FA)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+          // animated background gradient
+          AnimatedBuilder(
+            animation: _bgController,
+            builder: (context, child) {
+              final t = _bgController.value;
+              final c1 = Color.lerp(const Color(0xFF071826), const Color(0xFF0A2540), 0.5 + 0.5 * sin(2 * pi * t))!;
+              final c2 = Color.lerp(const Color(0xFF0A2540), const Color(0xFF2AB7CA), 0.5 + 0.5 * cos(2 * pi * t))!;
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [c1, c2, const Color(0xFF2AB7CA), const Color(0xFFF5F8FA)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(top: 80, left: 24, right: 24, bottom: 24),
@@ -577,6 +600,31 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                        // Intro / hero card with brief pitch
+                        Card(
+                          elevation: 10,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text('Payment Link Verifier', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Quickly check payment, invoice, or vendor links for obvious fraud indicators. This client-side tool helps reduce social-engineering risks by surfacing suspicious patterns, Web3 addresses, and vendor signals without sending your URLs to any server.',
+                                ),
+                                SizedBox(height: 8),
+                                Text('Why this matters:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 4),
+                                Text('- Scams use crafted links to trick payers into sending funds.'),
+                                Text('- Fast, local checks complement manual diligence.'),
+                                Text('- Integrates Web3 address checks for crypto payments.'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                       if (_extensionMode || _extensionModeNote != null)
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 400),
@@ -1037,21 +1085,29 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
                                         separatorBuilder: (_, __) => const Divider(height: 8),
                                         itemBuilder: (context, i) {
                                           final e = _batchEntries[i];
-                                          return ListTile(
-                                            title: Text(e.display, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                            subtitle: Text('Score: ${e.score} • ${e.vendor}'),
-                                            trailing: IconButton(
-                                              icon: const Icon(Icons.add_circle_outline),
-                                              tooltip: 'Add to Audit Log',
-                                              onPressed: () {
-                                                setState(() {
-                                                  _auditLog.insert(0, e);
-                                                  _batchEntries.removeAt(i);
-                                                });
-                                              },
-                                            ),
-                                            onTap: () => _editAuditNote(e),
-                                          );
+                                              return TweenAnimationBuilder<double>(
+                                                tween: Tween(begin: 18.0, end: 0.0),
+                                                duration: Duration(milliseconds: 300 + (i * 30)),
+                                                builder: (context, val, child) => Transform.translate(
+                                                  offset: Offset(0, val),
+                                                  child: Opacity(opacity: 1.0 - (val / 30.0).clamp(0.0, 1.0), child: child),
+                                                ),
+                                                child: ListTile(
+                                                  title: Text(e.display, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                                  subtitle: Text('Score: ${e.score} • ${e.vendor}'),
+                                                  trailing: IconButton(
+                                                    icon: const Icon(Icons.add_circle_outline),
+                                                    tooltip: 'Add to Audit Log',
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        _auditLog.insert(0, e);
+                                                        _batchEntries.removeAt(i);
+                                                      });
+                                                    },
+                                                  ),
+                                                  onTap: () => _editAuditNote(e),
+                                                ),
+                                              );
                                         },
                                       ),
                                     ),
@@ -1130,23 +1186,31 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier> {
                                     separatorBuilder: (_, __) => const SizedBox(height: 6),
                                     itemBuilder: (context, index) {
                                       final entry = filtered[index];
-                                      return Card(
-                                        margin: const EdgeInsets.symmetric(vertical: 4),
-                                        child: ListTile(
-                                          leading: Icon(
-                                            entry.isRisky ? Icons.warning : Icons.check_circle,
-                                            color: entry.isRisky ? Colors.red : Colors.green,
-                                          ),
-                                          title: Text(entry.display, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                          subtitle: entry.note != null && entry.note!.isNotEmpty ? Text(entry.note!) : null,
-                                          onTap: () => _editAuditNote(entry),
-                                          trailing: IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.grey),
-                                            onPressed: () {
-                                              setState(() {
-                                                _auditLog.remove(entry);
-                                              });
-                                            },
+                                      return TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 18.0, end: 0.0),
+                                        duration: Duration(milliseconds: 300 + (index * 25)),
+                                        builder: (context, val, child) => Transform.translate(
+                                          offset: Offset(0, val),
+                                          child: Opacity(opacity: 1.0 - (val / 30.0).clamp(0.0, 1.0), child: child),
+                                        ),
+                                        child: Card(
+                                          margin: const EdgeInsets.symmetric(vertical: 4),
+                                          child: ListTile(
+                                            leading: Icon(
+                                              entry.isRisky ? Icons.warning : Icons.check_circle,
+                                              color: entry.isRisky ? Colors.red : Colors.green,
+                                            ),
+                                            title: Text(entry.display, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                            subtitle: entry.note != null && entry.note!.isNotEmpty ? Text(entry.note!) : null,
+                                            onTap: () => _editAuditNote(entry),
+                                            trailing: IconButton(
+                                              icon: const Icon(Icons.delete, color: Colors.grey),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _auditLog.remove(entry);
+                                                });
+                                              },
+                                            ),
                                           ),
                                         ),
                                       );
