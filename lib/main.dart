@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math';
 import 'web3_utils.dart';
