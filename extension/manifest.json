@@ -5,7 +5,12 @@
   "description": "Opens the Payment Link Verifier with the current page URL.",
   "action": {
     "default_title": "Verify payment link",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "../web/icons/Icon-192.png",
+      "48": "../web/icons/Icon-192.png",
+      "128": "../web/icons/Icon-512.png"
+    }
   },
   "permissions": ["tabs"]
 }

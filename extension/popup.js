@@ -1,5 +1,5 @@
 // Helper: read/save origin from chrome.storage
-const DEFAULT_ORIGIN = 'http://localhost:5000/';
+const DEFAULT_ORIGIN = 'https://vincenek.github.io/tax-verifier/';
 
 async function getSavedOrigin() {
   return new Promise((resolve) => {

@@ -9,16 +9,24 @@
     </style>
   </head>
   <body>
-    <h4>Verify this page</h4>
-    <p>Open the Payment Link Verifier for the current page.</p>
-    <label for="appOrigin">Verifier origin</label>
-    <input id="appOrigin" type="text" style="width:100%; padding:6px; margin-top:6px;" />
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button id="saveOrigin" style="flex:1;">Save Origin</button>
-      <button id="copyBookmarklet" style="flex:1;">Copy Bookmarklet</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="https://i.ibb.co/FLRWhWqH/web-app-manifest-192x192.png" alt="PLV" width="48" height="48" style="border-radius:10px"/>
+      <div>
+        <div style="font-weight:600">Payment Link Verifier</div>
+        <div style="font-size:12px;color:#666">Open the verifier for the current page</div>
+      </div>
     </div>
-    <button id="open" style="margin-top:10px;">Open Verifier</button>
+    <div style="margin-top:10px">
+      <label for="appOrigin" style="font-size:12px;color:#444;">Verifier origin</label>
+      <input id="appOrigin" type="text" style="width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #ddd;" />
+    </div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button id="saveOrigin" style="flex:1; background:#0A2540; color:#fff; border-radius:8px;">Save</button>
+      <button id="copyBookmarklet" style="flex:1; background:#fff; border:1px solid #ccc; border-radius:8px;">Copy</button>
+    </div>
+    <button id="open" style="margin-top:12px; width:100%; background:#0A2540; color:#fff; padding:10px; border-radius:10px; border:0">Open Verifier</button>
     <p style="font-size:12px; color:#666; margin-top:8px;">Tip: set this to your deployed origin before distributing the extension.</p>
+    <p style="font-size:12px; color:#666; margin-top:2px;"><a href="extension.html" target="_blank">Integration & SDK</a></p>
     <script src="popup.js"></script>
   </body>
 </html>
