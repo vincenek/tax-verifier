@@ -16,13 +16,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Payment Link Verifier',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F8FA),
+        scaffoldBackgroundColor: const Color(0xFFF7FBFC),
         canvasColor: Colors.white,
         // cardTheme removed for broader Flutter compatibility across CI runners
         inputDecorationTheme: const InputDecorationTheme(
@@ -31,10 +31,9 @@ class MyApp extends StatelessWidget {
           fillColor: Color(0xFFEFF3F6),
         ),
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF0A2540),
-          ),
+          headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF071826)),
+          headlineMedium: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0A2540)),
+          titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF0A2540)),
           bodyMedium: TextStyle(fontSize: 16, color: Color(0xFF1A2A3A)),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -819,24 +818,32 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
                             duration: const Duration(milliseconds: 250),
                             curve: Curves.easeInOut,
                             child: Card(
-                              elevation: _hoveringHero ? 14 : 10,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              elevation: _hoveringHero ? 18 : 12,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               child: Padding(
-                                padding: const EdgeInsets.all(18),
+                                padding: const EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text('Payment Link Verifier', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Quickly check payment, invoice, or vendor links for obvious fraud indicators. This client-side tool helps reduce social-engineering risks by surfacing suspicious patterns, Web3 addresses, and vendor signals without sending your URLs to any server.',
+                                  children: [
+                                    Row(children: [
+                                      Image.network('https://i.ibb.co/FLRWhWqH/web-app-manifest-192x192.png', width: 56, height: 56),
+                                      const SizedBox(width: 12),
+                                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+                                        Text('Payment Link Verifier', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                                        SizedBox(height: 6),
+                                        Text('Client-side link triage for payments and invoices', style: TextStyle(fontSize: 14, color: Color(0xFF375A66))),
+                                      ])
+                                    ]),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      'Quickly check payment, invoice, or vendor links for obvious fraud indicators. PLV runs entirely in your browser - your URLs are not sent to any server unless you explicitly export them.',
                                     ),
-                                    SizedBox(height: 8),
-                                    Text('Why this matters:', style: TextStyle(fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 4),
-                                    Text('- Scams use crafted links to trick payers into sending funds.'),
-                                    Text('- Fast, local checks complement manual diligence.'),
-                                    Text('- Integrates Web3 address checks for crypto payments.'),
+                                    const SizedBox(height: 12),
+                                    Row(children: const [
+                                      Icon(Icons.lock, color: Colors.teal), SizedBox(width:6), Text('Client-side only'), SizedBox(width:16),
+                                      Icon(Icons.flash_on, color: Colors.teal), SizedBox(width:6), Text('Fast local heuristics'), SizedBox(width:16),
+                                      Icon(Icons.code, color: Colors.teal), SizedBox(width:6), Text('Integrations & SDK'),
+                                    ]),
                                   ],
                                 ),
                               ),
