@@ -22,6 +22,31 @@ Quick local steps for Microsoft Edge
 Packaging (optional)
 
 - To produce a ZIP of this `extension/` folder on Windows, run the PowerShell helper `make_zip.ps1` included here. It creates `extension.zip` you can share for manual install.
+ - To produce a ZIP of this `extension/` folder on Windows, run the PowerShell helper `make_zip.ps1` included here. It creates `extension.zip` you can share for manual install.
+
+Integration SDK
+
+Below is a copy-paste friendly JavaScript snippet developers can embed in any web app to open PLV with the current page or a specific URL. It gracefully falls back to opening the deployed Pages site.
+
+```html
+<script>
+function openPLV(url){
+   var base = 'https://vincenek.github.io/tax-verifier/';
+   window.open(base + '?url=' + encodeURIComponent(url || location.href), '_blank');
+}
+</script>
+<button onclick="openPLV()">Verify this page</button>
+```
+
+React example (copy into a component):
+
+```jsx
+import React from 'react';
+export default function VerifyButton({url}){
+   const open = () => window.open('https://vincenek.github.io/tax-verifier/?url='+encodeURIComponent(url||location.href),'_blank');
+   return <button onClick={open}>Verify this page</button>;
+}
+```
 
 Notes
 
