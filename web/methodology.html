@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Methodology — Payment Link Verifier</title>
+  <style>body{font-family:system-ui,Arial,Helvetica,sans-serif;color:#0A2540;margin:24px}main{max-width:860px;margin:0 auto}h1{font-size:20px}pre{background:#f4f6f8;padding:12px;border-radius:6px}</style>
+</head>
+<body>
+  <main>
+    <h1>How PLV works</h1>
+    <p>PLV performs client-side heuristics to highlight obvious indicators of scam or suspicious payment links. Key checks include:</p>
+    <ul>
+      <li>Protocol checks: non-HTTPS or mixed content raises score.</li>
+      <li>Keyword heuristics: suspicious tokens like "payee-", "verify-", "invoice-now".</li>
+      <li>Shortener detection: common shorteners (bit.ly, tinyurl) increase risk weighting.</li>
+      <li>TLD and domain heuristics: uncommon or recently-registered TLDs may increase risk.</li>
+      <li>Web3 address extraction: detects on-chain addresses in the URL and surfaces a link to an explorer.</li>
+    </ul>
+    <h2>Limitations & false positives</h2>
+    <p>These heuristics are intentionally conservative and are meant for triage. They are not a definitive blocklist and may produce false positives. Use PLV as a quick aid alongside manual checks.</p>
+    <h2>Open source & transparency</h2>
+    <p>The code is open source; you can inspect the checks in <a href="/tax-verifier/">the repository</a>. If you need enterprise-grade guarantees, consider integrating PLV as a first-stage triage and routing higher-risk items to manual review.</p>
+    <p><a href="/tax-verifier/">Back to app</a></p>
+  </main>
+</body>
+</html>

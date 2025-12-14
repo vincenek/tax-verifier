@@ -315,7 +315,7 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
                         hintText: 'Paste one link per line or a CSV with links'),
                   ),
                   const SizedBox(height: 8),
-                  Row(
+                      Row(
                     children: [
                       ElevatedButton.icon(
                         onPressed: () async {
@@ -342,6 +342,25 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  // CSV header checkbox
+                  StatefulBuilder(builder: (ctx2, setState2) {
+                    bool _csvHasHeader = false;
+                    return Row(
+                      children: [
+                        Checkbox(
+                          value: _csvHasHeader,
+                          onChanged: (v) {
+                            _csvHasHeader = v ?? false;
+                            setStateDialog(() {});
+                            setState2(() {});
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        const Text('CSV has header row (first row is column names)')
+                      ],
+                    );
+                  }),
                   const SizedBox(height: 12),
                   if (_isBatchRunning)
                     Column(
@@ -409,7 +428,16 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
   List<String> _parseCsvLinks(String text) {
     final lines = text.split(RegExp(r'\r?\n'));
     final List<String> results = [];
-    for (final line in lines) {
+    int start = 0;
+    // detect header-like first row (contains letters but not http)
+    if (lines.isNotEmpty) {
+      final first = lines[0];
+      final hasComma = first.contains(',');
+      final looksLikeHeader = hasComma && !first.toLowerCase().contains('http') && !first.contains('://');
+      if (looksLikeHeader) start = 1;
+    }
+    for (int i = start; i < lines.length; i++) {
+      final line = lines[i];
       if (line.trim().isEmpty) continue;
       // If comma-separated, try to find a field that looks like a URL
       if (line.contains(',')) {
