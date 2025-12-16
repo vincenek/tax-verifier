@@ -18,17 +18,23 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Payment Link Verifier',
       theme: ThemeData(
+        primaryColor: const Color(0xFF0A2540),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
+          seedColor: const Color(0xFF0A2540),
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFF7FBFC),
         canvasColor: Colors.white,
-        // cardTheme removed for broader Flutter compatibility across CI runners
+        cardTheme: CardTheme(
+          elevation: 6,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        ),
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
           filled: true,
           fillColor: Color(0xFFEFF3F6),
+          contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         ),
         textTheme: const TextTheme(
           headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF071826)),
@@ -38,13 +44,13 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(Color(0xFF0A2540)),
-            foregroundColor: WidgetStatePropertyAll(Colors.white),
-            shape: WidgetStatePropertyAll(
+            backgroundColor: MaterialStatePropertyAll(const Color(0xFF0A2540)),
+            foregroundColor: MaterialStatePropertyAll(Colors.white),
+            shape: MaterialStatePropertyAll(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            padding: WidgetStatePropertyAll(
-              EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+            padding: MaterialStatePropertyAll(
+              const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
             ),
           ),
         ),
@@ -53,6 +59,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 2,
         ),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const PaymentLinkVerifier(),
     );

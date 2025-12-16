@@ -1,0 +1,33 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build web
+        run: flutter build web --release --base-href /tax-verifier/
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install http-server and lhci
+        run: |
+          npm ci --no-audit --no-fund
+          npm install -g http-server@0.12.3
+          npm install -g @lhci/cli@0.10.1
+      - name: Serve build and run LHCI
+        run: |
+          npx http-server ./build/web -p 8080 &
+          npx lhci autorun --collect.staticDistDir=./build/web --collect.url=http://127.0.0.1:8080
