@@ -4,23 +4,45 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Methodology — Payment Link Verifier</title>
-  <style>body{font-family:system-ui,Arial,Helvetica,sans-serif;color:#0A2540;margin:24px}main{max-width:860px;margin:0 auto}h1{font-size:20px}pre{background:#f4f6f8;padding:12px;border-radius:6px}</style>
+  <style>
+    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;color:#0A2540;margin:24px;background:#fbfdfe}
+    main{max-width:900px;margin:0 auto;background:#fff;padding:24px;border-radius:10px;box-shadow:0 8px 20px rgba(10,37,64,0.06)}
+    h1{font-size:22px}
+    ul{line-height:1.6}
+    pre{background:#f4f6f8;padding:12px;border-radius:6px}
+  </style>
 </head>
 <body>
   <main>
-    <h1>How PLV works</h1>
-    <p>PLV performs client-side heuristics to highlight obvious indicators of scam or suspicious payment links. Key checks include:</p>
+    <h1>Methodology — How Payment Link Verifier makes decisions</h1>
+    <p>
+      PLV is designed as a fast, client-side triage tool to help teams and operators quickly identify potentially risky payment links. It intentionally focuses on lightweight, explainable signals that can be evaluated without contacting third-party services.
+    </p>
+
+    <h2>Primary signals</h2>
     <ul>
-      <li>Protocol checks: non-HTTPS or mixed content raises score.</li>
-      <li>Keyword heuristics: suspicious tokens like "payee-", "verify-", "invoice-now".</li>
-      <li>Shortener detection: common shorteners (bit.ly, tinyurl) increase risk weighting.</li>
-      <li>TLD and domain heuristics: uncommon or recently-registered TLDs may increase risk.</li>
-      <li>Web3 address extraction: detects on-chain addresses in the URL and surfaces a link to an explorer.</li>
+      <li><strong>Protocol & host:</strong> non-HTTPS links and unusual hostnames increase risk weighting.</li>
+      <li><strong>Keyword heuristics:</strong> tokens like "payee-", "verify-", "invoice-now", "update" suggest urgency or automated prompts used by attackers.</li>
+      <li><strong>Shortener detection:</strong> common URL shorteners (bit.ly, tinyurl, t.co) raise suspicion because they hide destination domains.</li>
+      <li><strong>TLD & domain patterns:</strong> recently-registered domains, uncommon TLDs, and lookalike domains (character swaps) are penalized.</li>
+      <li><strong>Web3 address extraction:</strong> PLV detects on-chain addresses embedded in URLs and surfaces an explorer link for manual verification.</li>
     </ul>
-    <h2>Limitations & false positives</h2>
-    <p>These heuristics are intentionally conservative and are meant for triage. They are not a definitive blocklist and may produce false positives. Use PLV as a quick aid alongside manual checks.</p>
-    <h2>Open source & transparency</h2>
-    <p>The code is open source; you can inspect the checks in <a href="/tax-verifier/">the repository</a>. If you need enterprise-grade guarantees, consider integrating PLV as a first-stage triage and routing higher-risk items to manual review.</p>
+
+    <h2>Scoring & thresholds</h2>
+    <p>
+      Each signal contributes to a simple score aggregated into a 0–100 range. The UI surfaces a human-friendly verdict (Safe vs Risky) and the numeric score. Thresholds are intentionally conservative to reduce false negatives.
+    </p>
+
+    <h2>False positives & human review</h2>
+    <p>
+      PLV is a first-stage triage. We recommend integrating PLV results into a workflow where suspicious items are routed for manual review before any financial action is taken.
+    </p>
+
+    <h2>Open & auditable</h2>
+    <p>
+      The heuristics are intentionally simple and auditable. You can run the project locally, inspect the code, or adapt rules for your organisation. For enterprise environments, we recommend self-hosting any aggregation endpoints and combining PLV with additional reputation services.
+    </p>
+
     <p><a href="/tax-verifier/">Back to app</a></p>
   </main>
 </body>

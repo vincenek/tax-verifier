@@ -760,11 +760,19 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
       appBar: AppBar(
         title: Row(
           children: [
-            const Icon(Icons.verified_user, color: Colors.tealAccent, size: 28),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                '/assets/logo.svg',
+                width: 36,
+                height: 36,
+                errorBuilder: (_, __, ___) => const Icon(Icons.verified_user, color: Colors.tealAccent, size: 28),
+              ),
+            ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Payment Link Verifier',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -789,12 +797,12 @@ class _PaymentLinkVerifierState extends State<PaymentLinkVerifier>
       ),
       floatingActionButton: ScaleTransition(
         scale: _fabScale,
-        child: FloatingActionButton.extended(
-          onPressed: _verifyLink,
-          icon: const Icon(Icons.search),
-          label: const Text('Quick Verify'),
-          backgroundColor: Colors.teal,
-        ),
+          child: FloatingActionButton.extended(
+            onPressed: _verifyLink,
+            icon: const Icon(Icons.search),
+            label: const Text('Quick Verify'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
       ),
       body: Stack(
         children: [

@@ -16,14 +16,23 @@ function saveOrigin(value) {
 }
 
 document.getElementById('open').addEventListener('click', async () => {
+  const btn = document.getElementById('open');
   try {
+    btn.disabled = true;
+    btn.textContent = 'Opening...';
+    btn.style.transform = 'scale(0.98)';
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tabs[0].url;
     const appOrigin = await getSavedOrigin();
     const target = appOrigin + (appOrigin.includes('?') ? '&' : '?') + 'url=' + encodeURIComponent(url);
-    chrome.tabs.create({ url: target });
+    chrome.tabs.create({ url: target }, () => {
+      btn.textContent = 'Opened';
+      setTimeout(() => { btn.textContent = 'Open Verifier'; btn.disabled = false; btn.style.transform = ''; }, 900);
+    });
   } catch (e) {
     console.error(e);
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = 'Open Verifier'; btn.disabled = false; btn.style.transform = ''; }, 1200);
   }
 });
 

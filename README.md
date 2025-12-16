@@ -1,16 +1,35 @@
 # tax
 
-A new Flutter project.
+Payment Link Verifier (PLV)
 
-## Getting Started
+This project is a client-side Flutter web app to triage payment and invoice links.
 
-This project is a starting point for a Flutter application.
+Quick local QA & deploy
 
-A few resources to get you started if this is your first Flutter project:
+- Run app locally in Edge/Chrome:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```powershell
+flutter run -d edge
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Build web and preview:
+
+```powershell
+flutter build web --release --base-href /tax-verifier/
+# then serve build/web with a static server
+```
+
+- Publish to `gh-pages` (manual helper):
+
+```powershell
+.\tools\publish_ghpages.ps1
+```
+
+Keyboard shortcuts
+
+- Ctrl+V: Paste & Verify
+- Ctrl+B: Open Batch dialog
+
+Continuous integration
+
+A GitHub Actions workflow is included at `.github/workflows/ci_deploy.yml` which will run on push to `main` and can also be triggered manually. It analyzes, tests, builds, and publishes `build/web` to the `gh-pages` branch.

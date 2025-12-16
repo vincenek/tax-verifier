@@ -5,46 +5,52 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Privacy & Security — Payment Link Verifier</title>
   <meta name="description" content="Privacy and methodology for Payment Link Verifier">
-  <link rel="icon" href="https://ibb.co/nNx0w08P">
   <style>
-    body{font-family:system-ui,Arial,Helvetica,sans-serif;margin:24px;color:#0A2540}
-    main{max-width:760px;margin:0 auto}
-    h1{font-size:20px}
-    p{line-height:1.5}
-    .muted{color:#5b6b78;font-size:14px}
+    :root{--brand:#0A2540}
+    body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;margin:28px;color:var(--brand);background:#fbfdfe}
+    main{max-width:860px;margin:0 auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 18px rgba(10,37,64,0.06)}
+    h1{font-size:22px;margin-bottom:4px}
+    p{line-height:1.6}
+    .muted{color:#5b6b78;font-size:13px}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .k{color:#2b6d6b;font-weight:600}
   </style>
 </head>
 <body>
   <main>
-    <h1>Privacy & Security</h1>
+    <h1>Payment Link Verifier — Privacy & Security</h1>
     <p class="muted">Last updated: December 2025</p>
+
     <p>
-      Payment Link Verifier (PLV) runs entirely in your browser. When you check a link, the URL and any derived metadata remain in your device and are not sent to our servers by default.
+      Payment Link Verifier (PLV) is built to be privacy-first. By default, checks run entirely in your browser — URLs and derived metadata remain on your device and are not transmitted to our servers.
     </p>
-    <h2>What we do</h2>
+
+    <h2>What we collect</h2>
     <p>
-      PLV performs local, client-side heuristics to flag obvious indicators of phishing or scam links (suspicious keywords, non-HTTPS, known shorteners, unusual TLDs), and surface any detected Web3 addresses found in the URL.
+      PLV collects no personal identifiers by default. If you opt into usage analytics in the app <span class="k">Settings → Usage &amp; Analytics</span>, only minimal, anonymous events (action name, timestamp, basic counts) are stored locally and may be sent to an endpoint you control or configure. We never collect raw payment amounts, user names, or full financial records.
     </p>
-    <h2>Limitations</h2>
+
+    <h2>How data is handled</h2>
+    <ul>
+      <li>Default mode: entirely client-side, no network calls made by PLV.</li>
+      <li>Opt-in analytics: events are stored locally; you choose an endpoint to receive them. You can export or clear events anytime from the app.</li>
+      <li>Self-hosting and enterprise: you can self-host the verifier or run the batch processor locally for full control.</li>
+    </ul>
+
+    <h2>Transparency & open source</h2>
     <p>
-      These checks are heuristic and not exhaustive. PLV does not connect to every external reputation service or guarantee safety. Use it as a quick triage tool, not a final arbiter.
+      The codebase is public on GitHub. You can inspect the heuristics, run builds locally, or audit the exact behavior. Contributions and security reports are welcome — please open an issue on the repository.
     </p>
-    <h2>Open Source & Data</h2>
+
+    <h2>Contact & data requests</h2>
     <p>
-      The project's source code is available in the repository. You can inspect how checks are performed and run builds yourself. If you want to audit or contribute, please visit the GitHub repo.
+      For questions, security disclosures, or to request deletion of analytics data from your configured endpoint, contact: <a href="mailto:security@tax-verifier.example">security@tax-verifier.example</a>.
     </p>
+
     <p>
-      For more details on methodology, click <a href="#" id="how">How it works</a> or return to the app home.
-    </p>
-    <p>
-      <a href="/tax-verifier/">Back to app</a>
+      <a href="/tax-verifier/">Back to app</a> • <a href="/tax-verifier/methodology.html">Methodology</a>
     </p>
   </main>
-  <script>
-    document.getElementById('how').addEventListener('click', function(e){
-      e.preventDefault();
-      alert('PLV uses pattern-matching heuristics, favicon and screenshot previews, and Web3 address extraction. It highlights obvious indicators but does not perform exhaustive analysis.');
-    });
-  </script>
 </body>
 </html>
